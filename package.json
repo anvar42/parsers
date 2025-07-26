@@ -1,0 +1,26 @@
+{
+  "name": "parsers",
+  "version": "1.0.0",
+  "description": "writing different parsers",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anvar42/parsers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anvar42/parsers/issues"
+  },
+  "homepage": "https://github.com/anvar42/parsers#readme",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2"
+  }
+}
