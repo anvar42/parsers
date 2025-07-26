@@ -4,6 +4,7 @@
   "description": "writing different parsers",
   "main": "index.js",
   "scripts": {
+    "start": "ts-node jsonParser/main.ts",
     "test": "jest"
   },
   "repository": {
