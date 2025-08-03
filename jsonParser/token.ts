@@ -9,93 +9,86 @@ export type TokenType =
   | "False"
   | "Null";
 
-export type TOKEN = {
+export type Token = {
     type: TokenType;
     value: string;
 }
 
-export const tokenizer = (input: string): TOKEN[] => {
+export interface TokenHandler {
+  tokenize: (input: string, i: number) => boolean;
+  consumeToken: (input: string, i: number) => { token: Token; nextIndex: number };
+}
+
+const createSymbolHandler = (char: string, type: Token['type']): TokenHandler => ({
+  tokenize: (input, i) => input[i] === char,
+  consumeToken: (_, i) => ({ token: { type, value: char } as Token, nextIndex: i + 1 })
+});
+
+const createLiteralHandler = <T extends Token['type']>(literal: string, type: T): TokenHandler => ({
+  tokenize: (input, i) => input.slice(i, i + literal.length) === literal,
+  consumeToken: (_, i) => ({ token: { type, value: literal } as Token, nextIndex: i + literal.length })
+});
+
+const numberHandler: TokenHandler = {
+  tokenize: (input, i) => isNumber(input[i]),
+  consumeToken: (input, i) => {
+    let numStr = '';
+    while (i < input.length && isNumber(input[i])) {
+      numStr += input[i++];
+    }
+    return { token: { type: 'Number', value: numStr }, nextIndex: i };
+  }
+};
+
+const stringHandler: TokenHandler = {
+  tokenize: (input, i) => input[i] === '"',
+  consumeToken: (input, i) => {
+    i++;
+    let result = "";
+
+    while (input[i] !== '"') {
+      result += input[i];
+      i++;
+    }
+
+    return { token: { type: 'String', value: result }, nextIndex: i + 1 };
+  }
+}
+
+const handlers: TokenHandler[] = [
+  createSymbolHandler('{', 'BraceOpen'),
+  createSymbolHandler('}', 'BraceClose'),
+  createSymbolHandler(':', 'Colon'),
+  createSymbolHandler(',', 'Comma'),
+  createLiteralHandler('true', 'True'),
+  createLiteralHandler('false', 'False'),
+  createLiteralHandler('null', 'Null'),
+  numberHandler,
+  stringHandler
+];
+
+
+export function tokenizer(input: string): Token[] {
   let current = 0;
-  const tokens: TOKEN[] = [];
+  const tokens: Token[] = [];
 
   while (current < input.length) {
-    let char = input[current];
-
-    if (isWhitespace(char)) {
+    if (isWhitespace(input[current])) {
       current++;
       continue;
     }
 
-    if (char === '{') {
-      tokens.push({ type: "BraceOpen", value: char });
-      current++;
-      continue;
-    }
+    const handler = handlers.find(h => h.tokenize(input, current));
 
-    if (char === ":") {
-      tokens.push({ type: "Colon", value: char });
-      current++;
-      continue;
-    }
+    if (!handler) throw new Error(`Unexpected character '${input[current]}' at position ${current}`);
 
-    if (char === ",") {
-      tokens.push({ type: "Comma", value: char });
-      current++;
-      continue;
-    }
-
-    if (char === '"') { 
-      let val = "";
-      current++;
-      while (input[current] !== '"') {
-        val += input[current];
-        current++;
-      }
-      tokens.push({ type: "String", value: val });
-      current++;
-      continue;
-    }
-
-    if (isNumber(char)) {
-      let num = "";
-      while(isNumber(input[current])) {
-        num += input[current];
-        current++;
-      }
-      tokens.push({ type: "Number", value: num });
-      current++;
-      continue;
-    }
-
-    if (char === "}") {
-      tokens.push({ type: "BraceClose", value: char });
-      current++;
-      continue;
-    }
-
-    if (isWordOrDigit(char)) {
-      let value = "";
-      while (isWordOrDigit(char)) {
-        value += char;
-        char = input[++current];
-      }
-
-      if (isNumber(value)) tokens.push({ type: "Number", value });
-      else if (isBooleanFalse(value)) tokens.push({ type: "False", value });
-      else if (isBooleanTrue(value)) tokens.push({ type: "True", value });
-      else if (isNull(value)) tokens.push({ type: "Null", value });
-      else throw new Error("Unexpected value: " + value);
-
-      continue;
-    }
+    const { token, nextIndex } = handler.consumeToken(input, current);
+    tokens.push(token);
+    current = nextIndex;
   }
 
   return tokens;
-};
-
-export const addToken = (tokens: TOKEN[], value: string) => {
-  tokens.push({ type: "BraceOpen", value});
-} 
+}
 
 const isWhitespace = (char: string): boolean => {
   const whitespaceChars = [' ', '\n', '\t', '\r', '\f'];
@@ -107,7 +100,7 @@ const isNumber = (value: string) => !isNaN(Number(value));
 export const isBooleanTrue = (value: string): boolean => value === "true";
 export const isBooleanFalse = (value: string): boolean => value === "false";
 
-const isWordOrDigit = (c: string) =>
+export const isWordOrDigit = (c: string) =>
   (c >= 'a' && c <= 'z') ||
   (c >= 'A' && c <= 'Z') ||
   (c >= '0' && c <= '9') ||
