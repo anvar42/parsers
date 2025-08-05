@@ -3,6 +3,7 @@ export type TokenType =
   | "BraceClose"
   | "String"
   | "Number"
+  | "Float"
   | "Comma"
   | "Colon"
   | "True"
@@ -29,7 +30,7 @@ const createLiteralHandler = <T extends Token['type']>(literal: string, type: T)
   consumeToken: (_, i) => ({ token: { type, value: literal } as Token, nextIndex: i + literal.length })
 });
 
-const numberHandler: TokenHandler = {
+export const numberHandler: TokenHandler = {
   tokenize: (input, i) => isNumber(input[i]),
   consumeToken: (input, i) => {
     let numStr = '';
@@ -55,6 +56,40 @@ const stringHandler: TokenHandler = {
   }
 }
 
+const floatNumber: TokenHandler = {
+  tokenize: (input, i) => {
+    return isNumber(input[i]) || (input[i] === '-' && isNumber(input[i + 1]));
+  },
+  consumeToken: (input, i) => {
+    let numStr = '';
+
+    if (input[i] === '-') {
+      numStr += input[i++];
+    }
+
+    while (isNumber(input[i])) {
+      numStr += input[i++];
+    }
+
+    if (input[i] === '.') {
+      numStr += input[i++];
+
+      if (!isNumber(input[i])) {
+        throw new Error(`Invalid float: ${i}`);
+      }
+
+      while (isNumber(input[i])) {
+        numStr += input[i++];
+      }
+    }
+
+    return {
+      token: { type: 'Float', value: numStr },
+      nextIndex: i
+    };
+  }
+};
+
 const handlers: TokenHandler[] = [
   createSymbolHandler('{', 'BraceOpen'),
   createSymbolHandler('}', 'BraceClose'),
@@ -63,7 +98,7 @@ const handlers: TokenHandler[] = [
   createLiteralHandler('true', 'True'),
   createLiteralHandler('false', 'False'),
   createLiteralHandler('null', 'Null'),
-  numberHandler,
+  floatNumber,
   stringHandler
 ];
 

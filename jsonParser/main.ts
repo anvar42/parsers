@@ -1,14 +1,14 @@
+import { parser } from "./parser";
 import { tokenizer } from "./token"
 
-function main() {
-    const input = `{
-        "name": "Lorem",
-        "age": 30,
-        "isDev": true,
-        "skills": null
-      }`;
-      
-      console.log(tokenizer(input));
+export function main(input: string) {
+    const tokens = tokenizer(input);
+
+    const parse = parser(tokens);
+
+    return parse;
 }
 
-main();
+const input = '{"age": 30, "height": 1.8}';
+
+console.log(main(input));

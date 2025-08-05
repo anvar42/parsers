@@ -1,46 +1,38 @@
-import { JSONParser } from "./main";
+import { main } from "./main";
 
 describe("JSONParser", () => {
   describe("parse()", () => {
     test("parses an empty object", () => {
       const input = "{}";
       const expectedOutput = {};
-      const parser = new JSONParser(input);
+      const parser = main(input);
 
-      const output = parser.parse();
+      expect(parser).toEqual(expectedOutput);
+    });
 
+    test("parses an object with string values", () => {
+      const input = '{"name": "John", "city": "New York"}';
+      const expectedOutput = { name: "John", city: "New York" };
+
+      const output = main(input);
       expect(output).toEqual(expectedOutput);
     });
 
-    // test("parses an object with string values", () => {
-    //   const input = '{"name": "John", "city": "New York"}';
-    //   const expectedOutput = { name: "John", city: "New York" };
+    test("parses an object with numeric values", () => {
+      const input = '{"age": 30, "height": 1.8}';
+      const expectedOutput = { age: 30, height: 1.8 };
 
-    //   const parser = new JSONParser(input);
+      const output = main(input);
+      expect(output).toEqual(expectedOutput);
+    });
 
-    //   const output = parser.parse();
-    //   expect(output).toEqual(expectedOutput);
-    // });
+    test("parses an object with boolean values", () => {
+      const input = '{"hasChildren": true, "isMarried": false}';
+      const expectedOutput = { hasChildren: true, isMarried: false };
 
-    // test("parses an object with numeric values", () => {
-    //   const input = '{"age": 30, "height": 1.8}';
-    //   const expectedOutput = { age: 30, height: 1.8 };
-
-    //   const parser = new JSONParser(input);
-
-    //   const output = parser.parse();
-    //   expect(output).toEqual(expectedOutput);
-    // });
-
-    // test("parses an object with boolean values", () => {
-    //   const input = '{"hasChildren": true, "isMarried": false}';
-    //   const expectedOutput = { hasChildren: true, isMarried: false };
-
-    //   const parser = new JSONParser(input);
-
-    //   const output = parser.parse();
-    //   expect(output).toEqual(expectedOutput);
-    // });
+      const output = main(input);
+      expect(output).toEqual(expectedOutput);
+    });
 
     // test("parses an array of values", () => {
     //   const input = '[1, "two", true, null]';
