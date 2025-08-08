@@ -37,7 +37,7 @@ export const parser = (tokens: Token[]): ASTNode => {
     return result.node;
 };
 
-export const parseValue = (state: ParserState): ParseResult => {
+const parseValue = (state: ParserState): ParseResult => {
     if (isAtEnd(state)) {
         throw new Error("Unexpected end of tokens");
     }
@@ -77,7 +77,7 @@ export const parseValue = (state: ParserState): ParseResult => {
     }
 };
 
-export const parseObject = (state: ParserState): ParseResult => {
+const parseObject = (state: ParserState): ParseResult => {
     if (peek(state).type !== "BraceOpen") {
         throw new Error("Expected '{' at start of object");
     }
